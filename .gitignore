@@ -1,0 +1,69 @@
+# Dependencies
+node_modules/
+.pnp/
+.pnp.js
+
+# Testing
+coverage/
+
+# Production
+build/
+dist/
+out/
+
+# Misc
+.DS_Store
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Emscripten
+emsdk/
+
+# Build artifacts
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.dll
+*.exe
+*.wasm
+*.js.mem
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.swp
+*~
+
+# Project specific
+quickui-app/.next/
+quickui-app/.vercel/
+quickui-app/.env.local
+quickui-app/.env.development.local
+quickui-app/.env.test.local
+quickui-app/.env.production.local 
