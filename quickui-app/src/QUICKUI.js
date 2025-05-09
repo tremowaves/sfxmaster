@@ -348,8 +348,8 @@ export default function QuickUI() {
             <th className="px-2 py-1 border">Volume</th>
             <th className="px-2 py-1 border">Lặp</th>
             <th className="px-2 py-1 border">Play/Stop</th>
-            <th className="px-2 py-1 border">Export</th>
             <th className="px-2 py-1 border">Variation</th>
+            <th className="px-2 py-1 border">Export</th>
           </tr>
         </thead>
         <tbody>
@@ -382,7 +382,6 @@ export default function QuickUI() {
                       ...prev,
                       [track.id]: !prev[track.id]
                     }));
-                    // Nếu dùng Tone.js:
                     const player = playerRefs.current[track.id];
                     if (player) player.loop = !repeatState[track.id];
                     console.log("Set repeat for", track.id, "to", !repeatState[track.id]);
@@ -400,9 +399,6 @@ export default function QuickUI() {
                 >
                   {repeatState[track.id] ? '🔁 Repeat' : 'Repeat'}
                 </button>
-                <span style={{ marginLeft: 12, fontWeight: 500, color: '#666' }}>
-                  {repeatState[track.id] ? '∞' : (track.loopCount || 1)}
-                </span>
               </td>
               <td className="px-2 py-1 border">
                 {playingState[track.id] ? (
@@ -410,7 +406,6 @@ export default function QuickUI() {
                     onClick={() => stopSound(track.id)}
                     className="bg-red-500 text-white px-3 py-1 rounded"
                   >
-                    {/* Stop icon SVG */}
                     <svg width="16" height="16" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
                   </button>
                 ) : (
@@ -418,10 +413,22 @@ export default function QuickUI() {
                     onClick={() => playSound(track.id)}
                     className="bg-blue-500 text-white px-3 py-1 rounded"
                   >
-                    {/* Play icon SVG */}
                     <svg width="16" height="16" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
                   </button>
                 )}
+              </td>
+              <td className="px-2 py-1 border">
+                <div className="flex gap-1">
+                  {[-3, -2, -1, 0, 1, 2, 3].map(value => (
+                    <button
+                      key={value}
+                      onClick={() => addPitchVariation(track.id, value)}
+                      className={`px-2 rounded ${pitchVariation[track.id] === value ? 'bg-purple-500 text-white' : 'bg-purple-100 hover:bg-purple-200'}`}
+                    >
+                      {value > 0 ? `+${value}` : value}
+                    </button>
+                  ))}
+                </div>
               </td>
               <td className="px-2 py-1 border">
                 <button
@@ -438,19 +445,6 @@ export default function QuickUI() {
                 >
                   {exportStatus[track.id] === 'loading' ? 'Đang xuất...' : 'Export'}
                 </button>
-              </td>
-              <td className="px-2 py-1 border">
-                <div className="flex gap-1">
-                  {[-3, -2, -1, 0, 1, 2, 3].map(value => (
-                    <button
-                      key={value}
-                      onClick={() => addPitchVariation(track.id, value)}
-                      className={`px-2 rounded ${pitchVariation[track.id] === value ? 'bg-purple-500 text-white' : 'bg-purple-100 hover:bg-purple-200'}`}
-                    >
-                      {value > 0 ? `+${value}` : value}
-                    </button>
-                  ))}
-                </div>
               </td>
             </tr>
           ))}
