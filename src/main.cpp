@@ -16,8 +16,9 @@ void main_loop() {
     // Process audio
     gSoloud.update();
     
-    // Update UI
+    // Update and render UI
     gUI.update();
+    gUI.render();
 }
 
 int main(int argc, char* argv[]) {
