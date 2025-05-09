@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import * as Tone from 'tone';
-import { Play, Plus, X } from 'lucide-react';
+import { Play, Plus, X, ChevronUp, ChevronDown, StopCircle } from 'lucide-react';
 
 export default function QuickUI() {
   // State để lưu trữ danh sách âm thanh
@@ -12,6 +12,8 @@ export default function QuickUI() {
   const [playingState, setPlayingState] = useState({});
   // State để lưu trữ pitch variation
   const [pitchVariation, setPitchVariation] = useState({});
+  // State để lưu trữ số lần lặp
+  const [loopCount, setLoopCount] = useState({});
   
   // Refs để truy cập các player âm thanh
   const playerRefs = useRef({});
@@ -67,6 +69,7 @@ export default function QuickUI() {
       };
       
       setAudioTracks(prev => [...prev, newTrack]);
+      setLoopCount(prev => ({ ...prev, [newTrack.id]: 1 }));
       
       // Tạo player mới cho track này
       const player = new Tone.Player(buffer).toDestination();
@@ -98,13 +101,13 @@ export default function QuickUI() {
     // Phát âm thanh với số lần lặp lại
     let playCount = 0;
     const playNext = () => {
-      if (playCount < track.playCount) {
+      if (playCount < loopCount[trackId]) {
         player.start();
         playCount++;
         setPlayingState(prev => ({ ...prev, [trackId]: true }));
         
         player.onstop = () => {
-          if (playCount < track.playCount) {
+          if (playCount < loopCount[trackId]) {
             playNext();
           } else {
             setPlayingState(prev => ({ ...prev, [trackId]: false }));
@@ -116,14 +119,38 @@ export default function QuickUI() {
     playNext();
   };
 
+  // Hàm để dừng âm thanh
+  const stopSound = (trackId) => {
+    const player = playerRefs.current[trackId];
+    if (player) {
+      player.stop();
+      setPlayingState(prev => ({ ...prev, [trackId]: false }));
+    }
+  };
+
+  // Hàm để tăng số lần lặp
+  const increaseLoopCount = (trackId) => {
+    setLoopCount(prev => ({
+      ...prev,
+      [trackId]: (prev[trackId] || 1) + 1
+    }));
+  };
+
+  // Hàm để giảm số lần lặp
+  const decreaseLoopCount = (trackId) => {
+    setLoopCount(prev => ({
+      ...prev,
+      [trackId]: Math.max(1, (prev[trackId] || 1) - 1)
+    }));
+  };
+
   // Hàm để thêm variation cho pitch
-  const addVariation = (trackId) => {
-    const randomPitch = Math.floor(Math.random() * 7) - 3; // Random từ -3 đến 3
-    setPitchVariation(prev => ({ ...prev, [trackId]: randomPitch }));
+  const addPitchVariation = (trackId, amount) => {
+    setPitchVariation(prev => ({ ...prev, [trackId]: amount }));
     
     const player = playerRefs.current[trackId];
     if (player) {
-      player.pitch = randomPitch;
+      player.pitch = amount;
     }
   };
 
@@ -197,13 +224,6 @@ export default function QuickUI() {
       console.error("Error exporting sound:", error);
       alert("Error exporting sound. Please try again.");
     }
-  };
-
-  // Hàm để export tất cả các âm thanh
-  const exportAllSounds = () => {
-    audioTracks.forEach(track => {
-      exportSound(track.id);
-    });
   };
 
   // Hàm để chuyển đổi AudioBuffer sang WAV
@@ -417,7 +437,7 @@ export default function QuickUI() {
                     type="number" 
                     min="1" 
                     max="10" 
-                    value={track.playCount} 
+                    value={loopCount[track.id] || 1} 
                     onChange={(e) => updatePlayCount(track.id, Number(e.target.value))}
                     className="w-8 bg-transparent text-center"
                   />
@@ -433,13 +453,59 @@ export default function QuickUI() {
                   <Play size={18} fill={playingState[track.id] ? "white" : "black"} />
                 </button>
 
-                {/* Variation button */}
+                {/* Stop button */}
                 <button 
-                  onClick={() => addVariation(track.id)}
+                  onClick={() => stopSound(track.id)}
                   className="px-6 py-2 bg-purple-100 rounded-full hover:bg-purple-200"
                 >
-                  VARIATION
+                  <StopCircle size={18} />
                 </button>
+
+                {/* Pitch variation */}
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => addPitchVariation(track.id, -3)}
+                    className="px-2 py-1 rounded hover:bg-gray-200"
+                  >
+                    -3
+                  </button>
+                  <button
+                    onClick={() => addPitchVariation(track.id, -2)}
+                    className="px-2 py-1 rounded hover:bg-gray-200"
+                  >
+                    -2
+                  </button>
+                  <button
+                    onClick={() => addPitchVariation(track.id, -1)}
+                    className="px-2 py-1 rounded hover:bg-gray-200"
+                  >
+                    -1
+                  </button>
+                  <button
+                    onClick={() => addPitchVariation(track.id, 0)}
+                    className="px-2 py-1 rounded hover:bg-gray-200"
+                  >
+                    0
+                  </button>
+                  <button
+                    onClick={() => addPitchVariation(track.id, 1)}
+                    className="px-2 py-1 rounded hover:bg-gray-200"
+                  >
+                    +1
+                  </button>
+                  <button
+                    onClick={() => addPitchVariation(track.id, 2)}
+                    className="px-2 py-1 rounded hover:bg-gray-200"
+                  >
+                    +2
+                  </button>
+                  <button
+                    onClick={() => addPitchVariation(track.id, 3)}
+                    className="px-2 py-1 rounded hover:bg-gray-200"
+                  >
+                    +3
+                  </button>
+                </div>
 
                 {/* Export button */}
                 <button 
