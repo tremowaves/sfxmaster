@@ -178,18 +178,47 @@ export default function QuickUI() {
     setTimeout(() => URL.revokeObjectURL(url), 100);
   }
 
-  // Hàm export cho từng track sử dụng Tone.js
-  const exportSound = (trackId) => {
-    const track = audioTracks.find(t => t.id === trackId);
-    if (!track || !track.buffer) {
-      alert('Không có buffer âm thanh!');
-      return;
+  // Hàm export với variation sử dụng Tone.Recorder
+  const exportWithVariation = async (track, pitchVariation, onStatus) => {
+    try {
+      if (onStatus) onStatus('loading');
+      // Tạo recorder
+      const recorder = new Tone.Recorder();
+      // Tạo player từ buffer
+      const player = new Tone.Player(track.buffer).toDestination();
+      let chainStart = player;
+      // Nếu có variation, thêm hiệu ứng pitch shift
+      if (pitchVariation && pitchVariation !== 0) {
+        const pitchShift = new Tone.PitchShift({ pitch: pitchVariation }).toDestination();
+        player.disconnect();
+        player.connect(pitchShift);
+        chainStart = pitchShift;
+      }
+      // Kết nối vào recorder
+      chainStart.connect(recorder);
+      // Đảm bảo âm thanh đã tải
+      await Tone.loaded();
+      // Bắt đầu ghi
+      recorder.start();
+      // Phát âm thanh
+      player.start();
+      // Đợi phát xong
+      await new Promise(resolve => setTimeout(resolve, player.buffer.duration * 1000 + 500));
+      // Dừng ghi và lấy blob
+      const recording = await recorder.stop();
+      // Tạo URL và tải file
+      const fileName = `${track.name.replace(/\.[^/.]+$/, '')}_var${pitchVariation > 0 ? '+' + pitchVariation : pitchVariation}.wav`;
+      const url = URL.createObjectURL(recording);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 100);
+      if (onStatus) onStatus('success', fileName);
+    } catch (error) {
+      if (onStatus) onStatus('error', error);
+      console.error('Lỗi khi export:', error);
     }
-    const audioBuffer = track.buffer.get();
-    const wavBlob = bufferToWav(audioBuffer);
-    const fileName = track.name.replace(/\.[^/.]+$/, '') + '.wav';
-    downloadWavBlob(wavBlob, fileName);
-    alert(`Đã xuất file ${fileName} thành công!`);
   };
 
   // Hàm để export tất cả âm thanh
@@ -197,8 +226,11 @@ export default function QuickUI() {
     if (audioTracks.length === 0) return;
     setExportAllProgress(0);
     for (let i = 0; i < audioTracks.length; i++) {
-      await exportSound(audioTracks[i].id);
-      setExportAllProgress(((i + 1) / audioTracks.length) * 100);
+      await exportWithVariation(audioTracks[i], pitchVariation[audioTracks[i].id] || 0, (status, info) => {
+        setExportAllProgress(((i + 1) / audioTracks.length) * 100);
+        if (status === 'success') alert(`Đã xuất file ${info} thành công!`);
+        if (status === 'error') alert('Lỗi khi xuất file. Vui lòng thử lại.');
+      });
     }
     setExportAllProgress(0);
     alert("Đã xuất tất cả file thành công!");
@@ -279,6 +311,9 @@ export default function QuickUI() {
       }
     });
   };
+
+  // State để hiển thị trạng thái export từng track
+  const [exportStatus, setExportStatus] = useState({});
 
   // Hiển thị ứng dụng
   return (
@@ -389,11 +424,19 @@ export default function QuickUI() {
                 )}
               </td>
               <td className="px-2 py-1 border">
-                <button 
-                  onClick={() => exportSound(track.id)} 
-                  className="bg-green-500 text-white px-3 py-1 rounded"
+                <button
+                  onClick={async () => {
+                    setExportStatus(prev => ({ ...prev, [track.id]: 'loading' }));
+                    await exportWithVariation(track, pitchVariation[track.id] || 0, (status, info) => {
+                      setExportStatus(prev => ({ ...prev, [track.id]: status }));
+                      if (status === 'success') alert(`Đã xuất file ${info} thành công!`);
+                      if (status === 'error') alert('Lỗi khi xuất file. Vui lòng thử lại.');
+                    });
+                  }}
+                  className={`bg-green-500 text-white px-3 py-1 rounded ${exportStatus[track.id] === 'loading' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  disabled={exportStatus[track.id] === 'loading'}
                 >
-                  Export
+                  {exportStatus[track.id] === 'loading' ? 'Đang xuất...' : 'Export'}
                 </button>
               </td>
               <td className="px-2 py-1 border">
