@@ -1,7 +1,6 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -84,4 +83,16 @@
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+@layer utilities {
+  .border-border {
+    border-color: #e5e7eb; /* hoặc màu bạn muốn */
+  }
+  .bg-background {
+    background-color: #f7f7fb; /* hoặc màu bạn muốn */
+  }
+  .text-foreground {
+    color: #222; /* hoặc màu bạn muốn, ví dụ: #222 cho màu chữ đậm */
+  }
+  /* Thêm các custom class khác nếu cần */
 }

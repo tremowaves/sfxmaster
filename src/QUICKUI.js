@@ -319,7 +319,7 @@ export default function QuickUI() {
   return (
     <div className="max-w-5xl mx-auto p-4 bg-gray-50 min-h-screen">
       <div className="bg-green-50 py-4 px-6 rounded-md mb-6 text-center">
-        <h1 className="text-3xl font-bold text-black">SFX MAKER</h1>
+        <h1 className="text-3xl font-bold text-black">SFX MASTER</h1>
         <p className="text-xl text-black">An UI Sound All in one for GameDev</p>
       </div>
 
