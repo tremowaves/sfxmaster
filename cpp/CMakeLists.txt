@@ -22,7 +22,7 @@ endif()
 
 # SoLoud source files
 set(SOUND_SOURCES
-    soloud/src/audiosource/ay.cpp
+    soloud/src/audiosource/ay/ay.cpp
     soloud/src/audiosource/biquadresonantfilter.cpp
     soloud/src/audiosource/bus.cpp
     soloud/src/audiosource/dcremovalfilter.cpp
